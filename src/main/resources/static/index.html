@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMatch | FAANG-Level Movie Booking & Discovery</title>
+    <meta name="description" content="Discover and book movies with a personalized, AI-driven recommendation engine.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="spotlight"></div>
+    <header>
+        <div class="logo">CineMatch</div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Movies</a></li>
+                <li><a href="#">Theaters</a></li>
+                <li><a href="#">Recommendations</a></li>
+                <li><a href="#">History</a></li>
+            </ul>
+        </nav>
+        <div class="user-controls" style="display: flex; gap: 15px; align-items: center;">
+            <div id="location-selector" class="glass-panel" style="padding: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative;">
+                <i class="fas fa-map-marker-alt" style="color: var(--accent);"></i>
+                <span id="current-location">Mumbai</span>
+                <div id="location-dropdown" class="glass-panel" style="display: none; position: absolute; top: 100%; left: 0; min-width: 250px; z-index: 2000; padding: 20px; box-shadow: var(--card-shadow); margin-top: 10px;">
+                    <label style="display: block; margin-bottom: 10px; font-size: 12px;">Select State</label>
+                    <select id="state-select" style="width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 4px; margin-bottom: 15px;"></select>
+                    
+                    <label style="display: block; margin-bottom: 10px; font-size: 12px;">Select City</label>
+                    <select id="city-select" style="width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 4px;"></select>
+                    
+                    <button class="btn-primary" style="width: 100%; margin-top: 20px; padding: 8px;" onclick="confirmLocation()">Confirm</button>
+                </div>
+            </div>
+            <button id="theme-toggle" class="glass-panel" style="border:none; padding: 10px; cursor: pointer; color: var(--text-primary);"><i class="fas fa-moon"></i></button>
+            <button class="btn-primary" id="loginBtn">Login</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Beyond Just Booking.</h1>
+            <p style="color: grey; font-size: 1.2rem; margin-top: 10px;">A smarter way to choose your cinematic experience.</p>
+            <div style="margin-top: 30px;">
+                <button class="btn-primary" onclick="scrollToMovies()">Explore Movies</button>
+            </div>
+        </section>
+
+        <section id="movie-discovery" style="padding: 0 40px;">
+            <h2 style="font-size: 32px; margin-bottom: 32px;">Trending This Week</h2>
+            <div class="movie-grid" id="movie-grid" style="padding: 0 0 80px 0;">
+                <!-- Movies will be loaded here via JS -->
+                 <div class="movie-card shimmer"></div>
+                 <div class="movie-card shimmer"></div>
+                 <div class="movie-card shimmer"></div>
+            </div>
+        </section>
+
+        <div id="selected-movie-info" style="padding: 0 40px; margin-bottom: 60px;"></div>
+
+        <!-- Recommendation Dashboard Section -->
+        <section class="recommend-section" id="recommendations">
+            <h2 style="font-size: 32px; margin-bottom: 24px; color: var(--accent);">
+                <i class="fas fa-robot"></i> Smart Preference Engine
+            </h2>
+            <p style="color: var(--text-secondary); margin-bottom: 30px;">Assign weights to factors that matter most to you.</p>
+
+            <div class="controls-panel glass-panel">
+                <div class="weight-control">
+                    <label>Ticket Price (Low is Best)</label>
+                    <input type="range" id="w-price" min="0" max="100" value="80">
+                </div>
+                <div class="weight-control">
+                    <label>Theater Ambiance</label>
+                    <input type="range" id="w-ambiance" min="0" max="100" value="50">
+                </div>
+                <div class="weight-control">
+                    <label>Seat Comfort</label>
+                    <input type="range" id="w-comfort" min="0" max="100" value="70">
+                </div>
+                <div class="weight-control">
+                    <label>A/V Quality (Dolby/IMAX)</label>
+                    <input type="range" id="w-av" min="0" max="100" value="90">
+                </div>
+                <div class="weight-control">
+                    <label>Food Quality</label>
+                    <input type="range" id="w-food" min="0" max="100" value="30">
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button id="apply-filters-btn" class="btn-primary" style="padding: 12px 30px;">Apply Filters</button>
+                </div>
+            </div>
+
+            <div id="recommended-shows" class="movie-grid" style="padding: 0;">
+                <div style="padding: 40px; text-align: center; width: 100%; border: 2px dashed var(--glass-border); border-radius: 16px; color: var(--text-secondary);">
+                    <h3>🎬 Step 1: Select a Movie Above</h3>
+                    <p style="margin-top: 10px;">Our AI will then analyze theaters based on your slider preferences below!</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="my-bookings" style="padding: 0 40px 80px 40px;">
+            <h2 style="font-size: 32px; margin-bottom: 32px; color: var(--accent);">My Active Tickets</h2>
+            <div id="tickets-container" style="display: flex; gap: 20px; overflow-x: auto; padding: 20px 0;">
+                <p style="color: grey;">No active bookings yet. Select a movie to get started!</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Movie Details Modal -->
+    <div id="movie-modal" class="modal glass-panel" style="display: none; position: fixed; top: 10%; left: 10%; width: 80%; height: 80%; z-index: 2000; padding: 40px; overflow-y: auto;">
+        <span class="close-btn" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+        <div id="modal-content" style="display: flex; gap: 40px;">
+            <!-- Content dynamic through JS -->
+        </div>
+    </div>
+
+    <!-- Unified Booking Modal -->
+    <div id="booking-modal" class="modal glass-panel" style="display: none; position: fixed; top: 10%; left: 10%; width: 80%; height: 80%; z-index: 3000; padding: 0; overflow: hidden;">
+        <span class="close-booking-btn" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; z-index: 10;">&times;</span>
+        
+        <div class="booking-flow-container" style="display: flex; height: 100%;">
+            <!-- Left Side: Progress & Summary -->
+            <div style="flex: 1; background: var(--bg-secondary); padding: 40px; border-right: 1px solid var(--glass-border);">
+                <div class="step-indicator">
+                    <div class="step-node active" id="node-1">1</div>
+                    <div class="step-node" id="node-2">2</div>
+                    <div class="step-node" id="node-3">3</div>
+                    <div class="step-node" id="node-4">4</div>
+                    <div class="step-node" id="node-5">5</div>
+                </div>
+                
+                <div id="booking-summary" style="margin-top: 40px;">
+                    <h3 id="sum-movie-title">Movie Title</h3>
+                    <p id="sum-theater-name" style="color: var(--accent);">Theater Name</p>
+                    <hr style="margin: 20px 0; border: 0.5px solid var(--glass-border);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Seats</span>
+                        <span id="sum-seats">None</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <span>Snacks</span>
+                        <span id="sum-snacks">₹0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px; font-weight: 800; font-size: 20px;">
+                        <span>Total</span>
+                        <span id="sum-total">₹0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Interaction -->
+            <div style="flex: 2; padding: 40px; overflow-y: auto;">
+                <!-- Step 1: Seat Selection -->
+                <div id="step-seats" class="booking-step">
+                    <h2>Select Your Seats</h2>
+                    <div id="seat-grid-unified" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 30px 0;"></div>
+                    <button class="btn-primary" onclick="goToStep(2)">Proceed to Verification</button>
+                </div>
+
+                <!-- Step 2: Email Verification -->
+                <div id="step-verify" class="booking-step" style="display: none;">
+                    <h2>Email Verification</h2>
+                    <p style="margin: 20px 0; color: var(--text-secondary);">We will send your ticket to this email.</p>
+                    <input type="email" id="user-email" placeholder="Enter your email" style="width: 100%; padding: 15px; background: var(--glass); border: 1px solid var(--glass-border); color: white; border-radius: 8px; margin-bottom: 10px;">
+                    <div id="email-error" style="color: var(--error); margin-bottom: 20px; font-size: 13px; display: none; background: rgba(248, 81, 73, 0.1); padding: 10px; border-radius: 6px; border: 1px solid var(--error);"></div>
+                    <button class="btn-primary" onclick="goToStep(3)">Verify & Continue</button>
+                </div>
+
+                <!-- Step 3: Add Snacks -->
+                <div id="step-snacks" class="booking-step" style="display: none;">
+                    <h2>Grab a Snack?</h2>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 30px 0;">
+                        <div class="glass-panel" style="padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>🍿 Popcorn (L) - ₹250</span>
+                            <button class="btn-primary" style="padding: 5px 10px;" onclick="addSnack(250)">Add</button>
+                        </div>
+                        <div class="glass-panel" style="padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>🥤 Coke (M) - ₹150</span>
+                            <button class="btn-primary" style="padding: 5px 10px;" onclick="addSnack(150)">Add</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="goToStep(4)">Proceed to Payment</button>
+                    <button style="background: transparent; border: none; color: grey; margin-left: 20px; cursor: pointer;" onclick="goToStep(4)">Skip</button>
+                </div>
+
+                <!-- Step 4: Payment -->
+                <div id="step-payment" class="booking-step" style="display: none;">
+                    <h2>Choose Payment Method</h2>
+                    <div class="payment-grid" style="margin: 30px 0;">
+                        <div class="payment-option" onclick="processPayment('UPI')"><i class="fas fa-mobile-alt"></i> <span>UPI (Google Pay/PhonePe)</span></div>
+                        <div class="payment-option" onclick="processPayment('Credit/Debit Card')"><i class="fas fa-credit-card"></i> <span>Credit / Debit Card</span></div>
+                        <div class="payment-option" onclick="processPayment('Net Banking')"><i class="fas fa-university"></i> <span>Net Banking</span></div>
+                        <div class="payment-option" onclick="processPayment('Wallet')"><i class="fas fa-wallet"></i> <span>Wallets (Amazon/Paytm)</span></div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Final Ticket -->
+                <div id="step-ticket" class="booking-step" style="display: none; text-align: center;">
+                    <div class="ticket">
+                        <div class="ticket-header">
+                            <h2>MOVING TICKET</h2>
+                        </div>
+                        <div class="ticket-body">
+                            <h3 id="t-movie">Oppenheimer</h3>
+                            <p id="t-theater" style="color: var(--accent);">PVR Mumbai</p>
+                            <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+                                <div><small>SCREEN</small><p>SCREEN 02</p></div>
+                                <div><small>SEATS</small><p id="t-seats">A1, A2</p></div>
+                            </div>
+                            <div style="font-size: 12px; color: grey; margin-top: 10px;">ID: <span id="t-id">TXN-00123</span></div>
+                        </div>
+                        <div class="ticket-footer">
+                            <div class="qr-placeholder">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CineMatch-Ticket-Demo" style="width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="margin-top: 30px;" onclick="closeBooking()">Download Ticket</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
